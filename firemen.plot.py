@@ -1,59 +1,62 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# --- Given Parameters and Calculated Values ---
-v0 = 25.0      # Initial speed (m/s)
-g = 9.80       # Acceleration due to gravity (m/s^2)
-x_building = 45.0  # Horizontal distance to building (m)
-t_impact = 3.00  # Time of flight to building (s)
+# -------------------------------------------------------------
+# Parameters
+# -------------------------------------------------------------
+v0 = 25.0            # initial speed (m/s)
+g = 9.8              # gravitational acceleration (m/s^2)
+x_target = 45.0      # horizontal distance to building (m)
+t_hit = 3.0          # time of impact (s)
 
-# Calculated values from part (a)
-cos_alpha = 45.0 / (v0 * t_impact)
-alpha_rad = np.arccos(cos_alpha)
-alpha_deg = np.degrees(alpha_rad)
-sin_alpha = np.sin(alpha_rad)
+# -------------------------------------------------------------
+# Derived quantities
+# -------------------------------------------------------------
+cos_a = x_target / (v0 * t_hit)
+a = np.arccos(cos_a)
+v0x = v0 * cos_a
+v0y = v0 * np.sin(a)
 
-# Initial velocity components
-v0x = v0 * cos_alpha
-v0y = v0 * sin_alpha
+# Trajectory curve
+t = np.linspace(0, t_hit, 300)
+x = v0x * t
+y = v0y * t - 0.5 * g * t**2
 
-# --- Trajectory Calculation ---
-# Time array for plotting the full flight until the building
-t_max = t_impact # We only plot until it hits the building
-time = np.linspace(0, t_max, 100)
+# Impact point
+y_hit = v0y * t_hit - 0.5 * g * t_hit**2
 
-# Horizontal position: x(t) = v0x * t
-x_t = v0x * time
-
-# Vertical position: y(t) = v0y * t - 0.5 * g * t^2
-y_t = v0y * time - 0.5 * g * time**2
-
-# --- Plotting ---
+# -------------------------------------------------------------
+# Plot
+# -------------------------------------------------------------
 plt.figure(figsize=(10, 6))
 
-# Plot the trajectory
-plt.plot(x_t, y_t, label='Water Stream Trajectory', color='blue')
+plt.plot(x, y, linewidth=2.2, label="Water Trajectory")
+plt.plot(0, 0, "o", color="green", markersize=9, label="Hose Exit")
+plt.plot(x_target, y_hit, "s", color="red", markersize=9,
+         label=f"Impact Point ({y_hit:.2f} m)")
 
-# Mark the starting point (hose)
-plt.plot(0, 0, 'o', label='Hose Exit', color='green', markersize=8)
+plt.vlines(x_target, 0, y_hit, linestyle="--", color="gray", linewidth=2)
+plt.axhline(0, color="sienna", linewidth=2)
 
-# Mark the impact point (building)
-y_impact = v0y * t_impact - 0.5 * g * t_impact**2
-plt.plot(x_building, y_impact, 's', label=f'Impact Point\n(Height: {y_impact:.1f} m)', color='red', markersize=8)
+plt.title(f"Projectile Path of Water Stream  (α = {np.degrees(a):.2f}°)",
+          fontsize=15, weight="bold")
+plt.xlabel("Horizontal Distance (m)", fontsize=12)
+plt.ylabel("Vertical Height (m)", fontsize=12)
 
-# Draw the building as a vertical line
-plt.vlines(x_building, 0, y_impact, linestyle='--', color='gray', label='Building Wall')
+plt.grid(True, linestyle=":", alpha=0.6)
+plt.legend(fontsize=11)
+plt.axis("equal")
+plt.ylim(bottom=0)
 
-# Draw a line for the ground
-plt.axhline(0, color='brown', linestyle='-', linewidth=2, label='Ground Level')
+# Annotation for clarity
+plt.annotate("Building Wall", xy=(x_target, y_hit),
+             xytext=(x_target + 4, y_hit + 3),
+             arrowprops=dict(arrowstyle="->", lw=1.5))
 
-# Add labels and title
-plt.title(f'Projectile Motion of Water Stream ($\\alpha = {alpha_deg:.1f}^\\circ$)', fontsize=14)
-plt.xlabel('Horizontal Distance (x) [m]', fontsize=12)
-plt.ylabel('Vertical Height (y) [m]', fontsize=12)
-plt.grid(True, linestyle=':', alpha=0.6)
-plt.legend()
-plt.axis('equal') # Optional: Makes sure x and y axes have the same scale
-plt.ylim(bottom=0) # Start the y-axis at 0
+plt.annotate("Highest Point", 
+             xy=(v0x * (v0y / g), (v0y**2) / (2 * g)),
+             xytext=(v0x * (v0y / g) + 5, (v0y**2) / (2 * g) + 5),
+             arrowprops=dict(arrowstyle="->", lw=1.5))
 
+plt.tight_layout()
 plt.show()
